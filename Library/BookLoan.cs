@@ -8,6 +8,7 @@ namespace Library
 {
     class BookLoan
     {
+        private static int nextId = 1;
         private int id { get; set; }
         private Book book { get; set; }
         private User user { get; set; }
@@ -16,7 +17,7 @@ namespace Library
 
         public BookLoan(int id, Book book, User user, DateTime loanDate)
         {
-            this.id = id;
+            this.id = nextId++;
             this.book = book;
             this.user = user;
             this.loanDate = loanDate;
@@ -25,10 +26,12 @@ namespace Library
 
         public bool IsReturned()
         {
+            return returnDate.HasValue;
         }
 
         public void RegisterReturn()
         {
+            this.returnDate = DateTime.Now;
         }
     }
 }
