@@ -53,20 +53,22 @@ namespace Library
                                 Console.Write("enter the book title: ");
                                 string bookTitle = Console.ReadLine();
 
-                                Book bookFound = null;
+                                List<Book> foundBooks = new List<Book>();
 
                                 foreach (var book in books)
                                 {
                                     if (book.title.Equals(bookTitle))
                                     {
-                                        bookFound = book;
-                                        break;
+                                        foundBooks.Add(book);
                                     }
                                 }
 
-                                if (bookFound != null)
+                                if (foundBooks.Count > 0)
                                 {
-                                    Console.WriteLine("id: {0}, book found: {1} by {2}", bookFound.id, bookFound.title, bookFound.author);
+                                    foreach (var bookFound in foundBooks)
+                                    {
+                                        Console.WriteLine("id: {0}, book found: {1} by {2}", bookFound.id, bookFound.title, bookFound.author);
+                                    }
                                 }
 
                                 else
@@ -90,7 +92,7 @@ namespace Library
                                 Console.Write("enter the book id: ");
                                 int borrowBookId = int.Parse(Console.ReadLine());
 
-                                bool bookExists = false;
+                                bool bookExistsBorrow = false;
 
                                 foreach (var book in books)
                                 {
@@ -98,9 +100,9 @@ namespace Library
                                     {
                                         if (book.IsAvailable() && users.Last().CanBorrow())
                                         {
-                                            bookExists = true;
+                                            bookExistsBorrow = true;
 
-                                            book.NotAvailable();
+                                            book.available = false;
                                             user.borrowedBooks.Add(new BookLoan(user, book, DateTime.Now));
                                             Console.WriteLine("loan made successfully");
 
@@ -109,7 +111,7 @@ namespace Library
                                     }
                                 }
 
-                                if (!bookExists)
+                                if (!bookExistsBorrow)
                                 {
                                     Console.WriteLine("book not available or user cannot borrow"); // could be more specific
                                 }
@@ -120,18 +122,24 @@ namespace Library
                                 Console.Write("enter the book id: ");
                                 int returnBookId = int.Parse(Console.ReadLine());
 
-                                BookLoan bookLoan = user.borrowedBooks.FirstOrDefault(b => b.book.id == returnBookId);
+                                bool bookExistsReturn = false;
 
-                                if (bookLoan != null && !bookLoan.IsReturned())
+                                foreach (var loan in user.borrowedBooks)
                                 {
-                                    bookLoan.RegisterReturn();
-                                    bookLoan.book.available = true;
-                                    Console.WriteLine("book returned successfully");
+                                    if (loan.book.id.Equals(returnBookId) && !loan.IsReturned())
+                                    {
+                                        loan.RegisterReturn();
+                                        loan.book.available = true;
+                                        Console.WriteLine("book returned successfully");
+
+                                        bookExistsReturn = true;
+                                        break;
+                                    }
                                 }
 
-                                else
+                                if (!bookExistsReturn)
                                 {
-                                    Console.WriteLine("book not found or already returned");
+                                    Console.WriteLine("book not found or already returned"); // could be more specific v2
                                 }
 
                                 break;
@@ -141,7 +149,10 @@ namespace Library
 
                                 foreach (var loan in user.borrowedBooks)
                                 {
-                                    Console.WriteLine("id: {0}, book: {1}, loan date: {2}, returned: {3}", loan.id, loan.book.title, loan.loanDate, loan.IsReturned() ? "yes" : "no");
+                                    if(!loan.book.available)
+                                    {
+                                        Console.WriteLine("id: {0}, book: {1}, loan date: {2}", loan.id, loan.book.title, loan.loanDate);
+                                    }
                                 }
 
                                 break;
