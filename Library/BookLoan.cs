@@ -10,12 +10,12 @@ namespace Library
     {
         private static int nextId = 1;
         public int id { get; set; }
-        public Book book { get; set; }
         public User user { get; set; }
+        public Book book { get; set; }
         public DateTime loanDate { get; set; }
         public DateTime? returnDate { get; set; }
 
-        public BookLoan(Book book, User user, DateTime loanDate)
+        public BookLoan(User user, Book book, DateTime loanDate)
         {
             this.id = nextId++;
             this.book = book;

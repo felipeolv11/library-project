@@ -12,7 +12,6 @@ namespace Library
         {
             List<Book> books = new List<Book>();
             List<User> users = new List<User>();
-            List<BookLoan> bookLoans = new List<BookLoan>();
 
             while (true)
             {
@@ -58,7 +57,7 @@ namespace Library
 
                                 foreach (var book in books)
                                 {
-                                    if (book.title.Equals(bookTitle, StringComparison.OrdinalIgnoreCase))
+                                    if (book.title.Equals(bookTitle))
                                     {
                                         bookFound = book;
                                         break;
@@ -102,7 +101,7 @@ namespace Library
                                             bookExists = true;
 
                                             book.NotAvailable();
-                                            user.borrowedBooks.Add(new BookLoan(book, user, DateTime.Now));
+                                            user.borrowedBooks.Add(new BookLoan(user, book, DateTime.Now));
                                             Console.WriteLine("loan made successfully");
 
                                             break;
@@ -112,7 +111,7 @@ namespace Library
 
                                 if (!bookExists)
                                 {
-                                    Console.WriteLine("book not available or user cannot borrow");
+                                    Console.WriteLine("book not available or user cannot borrow"); // could be more specific
                                 }
 
                                 break;
@@ -142,8 +141,7 @@ namespace Library
 
                                 foreach (var loan in user.borrowedBooks)
                                 {
-                                    Console.WriteLine("id: {0}, book: {1}, loan date: {2}, returned: {3}",
-                                    loan.id, loan.book.title, loan.loanDate, loan.IsReturned() ? "yes" : "no");
+                                    Console.WriteLine("id: {0}, book: {1}, loan date: {2}, returned: {3}", loan.id, loan.book.title, loan.loanDate, loan.IsReturned() ? "yes" : "no");
                                 }
 
                                 break;
@@ -181,7 +179,25 @@ namespace Library
                                 Console.Write("enter the books author: ");
                                 string bookAuthor = Console.ReadLine();
 
-                                // logic to add a new book
+                                bool bookExistsAdd = false;
+
+                                foreach (var book in books)
+                                {
+                                    if (book.title.Equals(bookTitle) && book.author.Equals(bookAuthor))
+                                    {
+                                        Console.WriteLine("book already exists");
+                                        bookExistsAdd = true;
+                                        break;
+                                    }
+                                }
+
+                                if (!bookExistsAdd)
+                                {
+                                    Book newBook = new Book(bookTitle, bookAuthor, true);
+                                    books.Add(newBook);
+
+                                    Console.WriteLine("book added successfully with id: {0}", newBook.id);
+                                }
 
                                 break;
 
@@ -189,7 +205,24 @@ namespace Library
                                 Console.Write("enter the book id: ");
                                 int removeBookId = int.Parse(Console.ReadLine());
 
-                                // logic to remove a book by id
+                                bool bookExistsRemove = false;
+
+                                foreach (var book in books)
+                                {
+                                    if (book.id.Equals(removeBookId))
+                                    {
+                                        books.Remove(book);
+
+                                        Console.WriteLine("book removed successfully");
+                                        bookExistsRemove = true;
+                                        break;
+                                    }
+                                }
+
+                                if (!bookExistsRemove)
+                                {
+                                    Console.WriteLine("book not found");
+                                }
 
                                 break;
 
@@ -197,28 +230,123 @@ namespace Library
                                 Console.Write("enter the book id: ");
                                 int editBookId = int.Parse(Console.ReadLine());
 
-                                // logic to edit book information by id
+                                bool bookExistsEdit = false;
+
+                                foreach (var book in books)
+                                {
+                                    if (book.id.Equals(editBookId))
+                                    {
+                                        Console.WriteLine("enter which one you want to update");
+                                        Console.WriteLine("1 - title");
+                                        Console.WriteLine("2 - author");
+                                        int editChoice = int.Parse(Console.ReadLine());
+
+                                        switch (editChoice)
+                                        {
+                                            case 1:
+                                                Console.Write("enter new title: ");
+                                                book.title = Console.ReadLine();
+
+                                                Console.WriteLine("title updated successfully");
+                                                break;
+
+                                            case 2:
+                                                Console.Write("enter new author: ");
+                                                book.author = Console.ReadLine();
+
+                                                Console.WriteLine("author updated successfully");
+                                                break;
+
+                                            default:
+                                                Console.WriteLine("invalid choice");
+                                                break;
+                                        }
+
+                                        bookExistsRemove = true;
+                                        break;
+                                    }
+                                }
+
+                                if (!bookExistsEdit)
+                                {
+                                    Console.WriteLine("book not found");
+                                }
 
                                 break;
 
                             case 4:
                                 Console.WriteLine("all books (including borrowed)");
 
-                                // logic to list all books including borrowed ones
+                                foreach (var book in books)
+                                {
+                                    Console.WriteLine("id: {0}, title: {1}, author: {2}, available: {3}", book.id, book.title, book.author, book.IsAvailable() ? "yes" : "no");
+                                }
 
                                 break;
 
                             case 5:
                                 Console.WriteLine("all customers and their borrowings");
 
-                                // logic to view all customers and their borrowings
+                                foreach (var user in users)
+                                {
+                                    Console.WriteLine("customer: {0}, email: {1}", user.name, user.email);
+
+                                    if (user.borrowedBooks.Count > 0)
+                                    {
+                                        Console.WriteLine("borrowed books:");
+                                        foreach (var loan in user.borrowedBooks)
+                                        {
+                                            Console.WriteLine("id: {0}, book: {1}, loan date: {2}, returned: {3}", loan.id, loan.book.title, loan.loanDate, loan.IsReturned() ? "yes" : "no");
+                                        }
+                                    }
+
+                                    else
+                                    {
+                                        Console.WriteLine("no borrowed books");
+                                    }
+                                }
 
                                 break;
 
                             case 6:
-                                Console.WriteLine("borrowing history");
+                                Console.WriteLine("enter the costumer name: ");
+                                string customerName = Console.ReadLine();
 
-                                // logic to view borrowing history
+                                List<User> customersSameName = new List<User>();
+
+                                foreach (var user in users)
+                                {
+                                    if (user.name.Equals(customerName))
+                                    {
+                                        customersSameName.Add(user);
+                                    }
+                                }
+
+                                if (customersSameName.Count > 0)
+                                {
+                                    foreach (var customer in customersSameName)
+                                    {
+                                        Console.WriteLine("customer: {0}, email: {1}", customer.name, customer.email);
+                                        if (customer.borrowedBooks.Count > 0)
+                                        {
+                                            Console.WriteLine("borrowing history:");
+                                            foreach (var loan in customer.borrowedBooks)
+                                            {
+                                                Console.WriteLine("id: {0}, book: {1}, loan date: {2}, returned: {3}", loan.id, loan.book.title, loan.loanDate, loan.IsReturned() ? "yes" : "no");
+                                            }
+                                        }
+
+                                        else
+                                        {
+                                            Console.WriteLine("no borrowed books");
+                                        }
+                                    }
+                                }
+
+                                else
+                                {
+                                    Console.WriteLine("customer not found");
+                                }
 
                                 break;
 
