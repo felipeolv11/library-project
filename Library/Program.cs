@@ -1,7 +1,8 @@
 ﻿using System;
-using System.Linq;
-using System.Threading;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Library
 {
@@ -20,39 +21,99 @@ namespace Library
                 Console.WriteLine("3 - exit");
                 int userChoice = int.Parse(Console.ReadLine());
 
-                switch (userChoice)
+                if (userChoice == 1)
                 {
-                    case 1:
+                    Console.Write("enter your name: ");
+                    string userName = Console.ReadLine();
+
+                    Console.Write("enter your email: ");
+                    string userEmail = Console.ReadLine();
+
+                    User user = users.FirstOrDefault(u => u.email == userEmail);
+
+                    if (user == null)
+                    {
+                        user = new User(userName, userEmail);
+                        users.Add(user);
+                    }
+
+                    int customerChoice = 0;
+                    while (customerChoice != 6)
+                    {
                         Console.WriteLine("1 - search a book by title");
                         Console.WriteLine("2 - list available books");
                         Console.WriteLine("3 - borrow a book");
                         Console.WriteLine("4 - return a book");
                         Console.WriteLine("5 - view my borrowed books");
                         Console.WriteLine("6 - exit");
-                        int customerChoice = int.Parse(Console.ReadLine());
+                        customerChoice = int.Parse(Console.ReadLine());
 
                         switch (customerChoice)
                         {
                             case 1:
-                                Console.Write("enter the book name: ");
+                                Console.Write("enter the book title: ");
                                 string bookTitle = Console.ReadLine();
 
-                                // search logic for book by title
+                                Book bookFound = null;
+
+                                foreach (var book in books)
+                                {
+                                    if (book.title.Equals(bookTitle, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        bookFound = book;
+                                        break;
+                                    }
+                                }
+
+                                if (bookFound != null)
+                                {
+                                    Console.WriteLine("id: {0}, book found: {1} by {2}", bookFound.id, bookFound.title, bookFound.author);
+                                }
+
+                                else
+                                {
+                                    Console.WriteLine("book not found");
+                                }
 
                                 break;
 
                             case 2:
                                 Console.WriteLine("available books");
 
-                                // logic to list available books
+                                foreach (var book in books.Where(b => b.IsAvailable()))
+                                {
+                                    Console.WriteLine("id: {0}, title: {1}, author: {2}", book.id, book.title, book.author);
+                                }
 
                                 break;
 
                             case 3:
                                 Console.Write("enter the book id: ");
-                                int bookId = int.Parse(Console.ReadLine());
+                                int borrowBookId = int.Parse(Console.ReadLine());
 
-                                // logic to borrow a book by id
+                                bool bookExists = false;
+
+                                foreach (var book in books)
+                                {
+                                    if (book.id.Equals(borrowBookId))
+                                    {
+                                        if (book.IsAvailable() && users.Last().CanBorrow())
+                                        {
+                                            bookExists = true;
+
+                                            book.NotAvailable();
+                                            user.borrowedBooks.Add(new BookLoan(book, user, DateTime.Now));
+                                            Console.WriteLine("loan made successfully");
+
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                if (!bookExists)
+                                {
+                                    Console.WriteLine("book not available or user cannot borrow");
+                                }
 
                                 break;
 
@@ -60,28 +121,48 @@ namespace Library
                                 Console.Write("enter the book id: ");
                                 int returnBookId = int.Parse(Console.ReadLine());
 
-                                // logic to return a book by id
+                                BookLoan bookLoan = user.borrowedBooks.FirstOrDefault(b => b.book.id == returnBookId);
+
+                                if (bookLoan != null && !bookLoan.IsReturned())
+                                {
+                                    bookLoan.RegisterReturn();
+                                    bookLoan.book.available = true;
+                                    Console.WriteLine("book returned successfully");
+                                }
+
+                                else
+                                {
+                                    Console.WriteLine("book not found or already returned");
+                                }
 
                                 break;
 
                             case 5:
-                                Console.WriteLine("your borrowed books");
+                                Console.WriteLine("{0}'s borrowed books", user.name);
 
-                                // logic to view borrowed books
+                                foreach (var loan in user.borrowedBooks)
+                                {
+                                    Console.WriteLine("id: {0}, book: {1}, loan date: {2}, returned: {3}",
+                                    loan.id, loan.book.title, loan.loanDate, loan.IsReturned() ? "yes" : "no");
+                                }
 
                                 break;
 
                             case 6:
-                                return;
+                                break;
 
                             default:
                                 Console.WriteLine("invalid choice");
-                                break;  
+                                break;
                         }
+                    }
+                }
 
-                        break;
-
-                    case 2:
+                else if (userChoice == 2)
+                {
+                    int employeeChoice = 0;
+                    while (employeeChoice != 7)
+                    {
                         Console.WriteLine("1 - add new book");
                         Console.WriteLine("2 - remove book from system");
                         Console.WriteLine("3 - edit book information");
@@ -89,7 +170,7 @@ namespace Library
                         Console.WriteLine("5 - view all customers and their borrowings");
                         Console.WriteLine("6 - view borrowing history");
                         Console.WriteLine("7 - exit");
-                        int employeeChoice = int.Parse(Console.ReadLine());
+                        employeeChoice = int.Parse(Console.ReadLine());
 
                         switch (employeeChoice)
                         {
@@ -142,22 +223,30 @@ namespace Library
                                 break;
 
                             case 7:
-                                return;
+                                break;
 
                             default:
                                 Console.WriteLine("invalid choice");
                                 break;
                         }
-
-                        break;
-
-                    case 3:
-                        return;
-
-                    default:
-                        Console.WriteLine("invalid choice");
-                        break;
+                    }
                 }
+
+                else if (userChoice == 3)
+                {
+                    Console.WriteLine("exiting...");
+                    Thread.Sleep(1000);
+                    return;
+                }
+
+                else
+                {
+                    Console.WriteLine("invalid choice");
+                }
+
+                /* problems
+                1. the code does not handle invalid inputs gracefully, which can lead to exceptions
+                2. the code shows available books/borrowed books even if there are no books in system */
             }
         }
     }

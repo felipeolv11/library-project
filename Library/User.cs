@@ -9,22 +9,21 @@ namespace Library
     class User
     {
         private static int nextId = 1;
-        private int id { get; set; }
-        private string name { get; set; }
-        private string email { get; set; }
+        public int id { get; set; }
+        public string name { get; set; }
+        public string email { get; set; }
+        public List<BookLoan> borrowedBooks { get; set; }
 
-        public User(int id, string name, string email)
+        public User(string name, string email)
         {
-            this.id = nextId++;
             this.name = name;
             this.email = email;
+            borrowedBooks = new List<BookLoan>();
         }
 
         public bool CanBorrow()
         {
-            // placeholder logic for borrowing eligibility
-
-            return true;
+            return borrowedBooks.Count < 3;
         }
     }
 }

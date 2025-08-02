@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -9,10 +12,10 @@ namespace Library
     class Book
     {
         private static int nextId = 1; 
-        private int id { get; set; }
-        private string title { get; set; }
-        private string author { get; set; }
-        private bool available { get; set; }
+        public int id { get; set; }
+        public string title { get; set; }
+        public string author { get; set; }
+        public bool available { get; set; }
 
         public Book(string title, string author, bool available)
         {
