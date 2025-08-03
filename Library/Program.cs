@@ -18,7 +18,12 @@ namespace Library
                 Console.WriteLine("1 - customer");
                 Console.WriteLine("2 - employee");
                 Console.WriteLine("3 - exit");
-                int userChoice = int.Parse(Console.ReadLine());
+
+                if (!int.TryParse(Console.ReadLine(), out int userChoice) || (userChoice < 1 || userChoice > 3))
+                {
+                    Console.WriteLine("invalid choice, please try again");
+                    continue;
+                }
 
                 if (userChoice == 1)
                 {
@@ -27,6 +32,12 @@ namespace Library
 
                     Console.Write("enter your email: ");
                     string userEmail = Console.ReadLine();
+
+                    if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(userEmail))
+                    {
+                        Console.WriteLine("invalid name or email, please try again");
+                        continue;
+                    }
 
                     User user = users.FirstOrDefault(u => u.email == userEmail);
 
@@ -45,13 +56,24 @@ namespace Library
                         Console.WriteLine("4 - return a book");
                         Console.WriteLine("5 - view my borrowed books");
                         Console.WriteLine("6 - exit");
-                        customerChoice = int.Parse(Console.ReadLine());
+
+                        if (!int.TryParse(Console.ReadLine(), out customerChoice))
+                        {
+                            Console.WriteLine("invalid choice, please try again");
+                            continue;
+                        }
 
                         switch (customerChoice)
                         {
                             case 1:
                                 Console.Write("enter the book title: ");
                                 string bookTitle = Console.ReadLine();
+
+                                if (string.IsNullOrWhiteSpace(bookTitle))
+                                {
+                                    Console.WriteLine("invalid title, please try again");
+                                    continue;
+                                }
 
                                 List<Book> foundBooks = new List<Book>();
 
@@ -79,14 +101,23 @@ namespace Library
                                 break;
 
                             case 2:
-                                Console.WriteLine("available books");
-
-                                foreach (var book in books.Where(b => b.IsAvailable()))
+                                if (books.Count > 0)
                                 {
-                                    Console.WriteLine("id: {0}, title: {1}, author: {2}", book.id, book.title, book.author);
+                                    Console.WriteLine("available books");
+
+                                    foreach (var book in books.Where(b => b.IsAvailable()))
+                                    {
+                                        Console.WriteLine("id: {0}, title: {1}, author: {2}", book.id, book.title, book.author);
+                                    }
+
+                                    break;
                                 }
 
-                                break;
+                                else
+                                {
+                                    Console.WriteLine("no books available");
+                                    break;
+                                }
 
                             case 3:
                                 Console.Write("enter the book id: ");
@@ -108,19 +139,34 @@ namespace Library
 
                                             break;
                                         }
+
+                                        else if (book.available == false)
+                                        {
+                                            Console.WriteLine("book is not available for borrowing");
+                                        }
+
+                                        else if (!user.CanBorrow())
+                                        {
+                                            Console.WriteLine("user cannot borrow more books");
+                                        }
                                     }
                                 }
 
                                 if (!bookExistsBorrow)
                                 {
-                                    Console.WriteLine("book not available or user cannot borrow"); // could be more specific
+                                    Console.WriteLine("book not found");
                                 }
 
                                 break;
 
                             case 4:
                                 Console.Write("enter the book id: ");
-                                int returnBookId = int.Parse(Console.ReadLine());
+
+                                if (!int.TryParse(Console.ReadLine(), out int returnBookId))
+                                {
+                                    Console.WriteLine("invalid id, please try again");
+                                    continue;
+                                }
 
                                 bool bookExistsReturn = false;
 
@@ -135,33 +181,49 @@ namespace Library
                                         bookExistsReturn = true;
                                         break;
                                     }
+
+                                    else if (loan.book.id.Equals(returnBookId) && loan.IsReturned())
+                                    {
+                                        Console.WriteLine("book already returned");
+                                        bookExistsReturn = true;
+                                        break;
+                                    }
                                 }
 
                                 if (!bookExistsReturn)
                                 {
-                                    Console.WriteLine("book not found or already returned"); // could be more specific v2
+                                    Console.WriteLine("book not found");
                                 }
 
                                 break;
 
                             case 5:
-                                Console.WriteLine("{0}'s borrowed books", user.name);
-
-                                foreach (var loan in user.borrowedBooks)
+                                if (user.borrowedBooks.Count > 0)
                                 {
-                                    if(!loan.book.available)
+                                    Console.WriteLine("{0}'s borrowed books", user.name);
+
+                                    foreach (var loan in user.borrowedBooks)
                                     {
-                                        Console.WriteLine("id: {0}, book: {1}, loan date: {2}", loan.id, loan.book.title, loan.loanDate);
+                                        if (!loan.book.available)
+                                        {
+                                            Console.WriteLine("id: {0}, book: {1}, loan date: {2}", loan.id, loan.book.title, loan.loanDate);
+                                        }
                                     }
+
+                                    break;
                                 }
 
-                                break;
+                                else
+                                {
+                                    Console.WriteLine("no borrowed books");
+                                    break;
+                                }
 
                             case 6:
                                 break;
 
                             default:
-                                Console.WriteLine("invalid choice");
+                                Console.WriteLine("invalid choice, please try again");
                                 break;
                         }
                     }
@@ -179,7 +241,12 @@ namespace Library
                         Console.WriteLine("5 - view all customers and their borrowings");
                         Console.WriteLine("6 - view borrowing history");
                         Console.WriteLine("7 - exit");
-                        employeeChoice = int.Parse(Console.ReadLine());
+
+                        if (!int.TryParse(Console.ReadLine(), out employeeChoice))
+                        {
+                            Console.WriteLine("invalid choice, please try again");
+                            continue;
+                        }
 
                         switch (employeeChoice)
                         {
@@ -189,6 +256,12 @@ namespace Library
 
                                 Console.Write("enter the books author: ");
                                 string bookAuthor = Console.ReadLine();
+
+                                if (string.IsNullOrWhiteSpace(bookTitle) || string.IsNullOrWhiteSpace(bookAuthor))
+                                {
+                                    Console.WriteLine("invalid title or author, please try again");
+                                    continue;
+                                }
 
                                 bool bookExistsAdd = false;
 
@@ -214,7 +287,12 @@ namespace Library
 
                             case 2:
                                 Console.Write("enter the book id: ");
-                                int removeBookId = int.Parse(Console.ReadLine());
+
+                                if (!int.TryParse(Console.ReadLine(), out int removeBookId))
+                                {
+                                    Console.WriteLine("invalid id, please try again");
+                                    continue;
+                                }
 
                                 bool bookExistsRemove = false;
 
@@ -239,7 +317,12 @@ namespace Library
 
                             case 3:
                                 Console.Write("enter the book id: ");
-                                int editBookId = int.Parse(Console.ReadLine());
+
+                                if (!int.TryParse(Console.ReadLine(), out int editBookId))
+                                {
+                                    Console.WriteLine("invalid id, please try again");
+                                    continue;
+                                }
 
                                 bool bookExistsEdit = false;
 
@@ -250,7 +333,7 @@ namespace Library
                                         Console.WriteLine("enter which one you want to update");
                                         Console.WriteLine("1 - title");
                                         Console.WriteLine("2 - author");
-                                        int editChoice = int.Parse(Console.ReadLine());
+                                        int editChoice = Console.Read();
 
                                         switch (editChoice)
                                         {
@@ -258,14 +341,34 @@ namespace Library
                                                 Console.Write("enter new title: ");
                                                 book.title = Console.ReadLine();
 
-                                                Console.WriteLine("title updated successfully");
+                                                if (string.IsNullOrWhiteSpace(book.title))
+                                                {
+                                                    Console.WriteLine("invalid title, please try again");
+                                                    continue;
+                                                }
+
+                                                else
+                                                {
+                                                    Console.WriteLine("title updated successfully");
+                                                }
+
                                                 break;
 
                                             case 2:
                                                 Console.Write("enter new author: ");
                                                 book.author = Console.ReadLine();
 
-                                                Console.WriteLine("author updated successfully");
+                                                if (string.IsNullOrWhiteSpace(book.author))
+                                                {
+                                                    Console.WriteLine("invalid author, please try again");
+                                                    continue;
+                                                }
+
+                                                else
+                                                {
+                                                    Console.WriteLine("author updated successfully");
+                                                }
+ 
                                                 break;
 
                                             default:
@@ -286,42 +389,65 @@ namespace Library
                                 break;
 
                             case 4:
-                                Console.WriteLine("all books (including borrowed)");
-
-                                foreach (var book in books)
+                                if (books.Count > 0)
                                 {
-                                    Console.WriteLine("id: {0}, title: {1}, author: {2}, available: {3}", book.id, book.title, book.author, book.IsAvailable() ? "yes" : "no");
+                                    Console.WriteLine("all books (including borrowed)");
+
+                                    foreach (var book in books)
+                                    {
+                                        Console.WriteLine("id: {0}, title: {1}, author: {2}, available: {3}", book.id, book.title, book.author, book.IsAvailable() ? "yes" : "no");
+                                    }
+                                }
+
+                                else
+                                {
+                                    Console.WriteLine("no books in the system");
                                 }
 
                                 break;
 
                             case 5:
-                                Console.WriteLine("all customers and their borrowings");
-
-                                foreach (var user in users)
+                                if (users.Count > 0)
                                 {
-                                    Console.WriteLine("customer: {0}, email: {1}", user.name, user.email);
+                                    Console.WriteLine("all customers and their borrowings");
 
-                                    if (user.borrowedBooks.Count > 0)
+                                    foreach (var user in users)
                                     {
-                                        Console.WriteLine("borrowed books:");
-                                        foreach (var loan in user.borrowedBooks)
+                                        Console.WriteLine("customer: {0}, email: {1}", user.name, user.email);
+
+                                        if (user.borrowedBooks.Count > 0)
                                         {
-                                            Console.WriteLine("id: {0}, book: {1}, loan date: {2}, returned: {3}", loan.id, loan.book.title, loan.loanDate, loan.IsReturned() ? "yes" : "no");
+                                            Console.WriteLine("borrowed books:");
+                                            foreach (var loan in user.borrowedBooks)
+                                            {
+                                                Console.WriteLine("id: {0}, book: {1}, loan date: {2}, returned: {3}", loan.id, loan.book.title, loan.loanDate, loan.IsReturned() ? "yes" : "no");
+                                            }
+                                        }
+
+                                        else
+                                        {
+                                            Console.WriteLine("no borrowed books");
                                         }
                                     }
 
-                                    else
-                                    {
-                                        Console.WriteLine("no borrowed books");
-                                    }
+                                    break;
                                 }
 
-                                break;
+                                else
+                                {
+                                    Console.WriteLine("no customers in the system");
+                                    break;
+                                }
 
                             case 6:
                                 Console.WriteLine("enter the costumer name: ");
                                 string customerName = Console.ReadLine();
+
+                                if (string.IsNullOrWhiteSpace(customerName))
+                                {
+                                    Console.WriteLine("invalid name, please try again");
+                                    continue;
+                                }
 
                                 List<User> customersSameName = new List<User>();
 
@@ -338,6 +464,7 @@ namespace Library
                                     foreach (var customer in customersSameName)
                                     {
                                         Console.WriteLine("customer: {0}, email: {1}", customer.name, customer.email);
+
                                         if (customer.borrowedBooks.Count > 0)
                                         {
                                             Console.WriteLine("borrowing history:");
@@ -365,7 +492,7 @@ namespace Library
                                 break;
 
                             default:
-                                Console.WriteLine("invalid choice");
+                                Console.WriteLine("invalid choice, please try again");
                                 break;
                         }
                     }
@@ -377,15 +504,6 @@ namespace Library
                     Thread.Sleep(1000);
                     return;
                 }
-
-                else
-                {
-                    Console.WriteLine("invalid choice");
-                }
-
-                /* problems
-                1. the code does not handle invalid inputs gracefully, which can lead to exceptions
-                2. the code shows available books/borrowed books even if there are no books in system */
             }
         }
     }
