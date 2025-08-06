@@ -15,18 +15,22 @@ namespace Library
 
             while (true)
             {
-                Console.WriteLine("1 - customer");
-                Console.WriteLine("2 - employee");
-                Console.WriteLine("3 - exit");
+                LibraryTag();
+
+                Console.WriteLine("1. customer");
+                Console.WriteLine("2. employee");
+                Console.WriteLine("3. exit\n");
 
                 if (!int.TryParse(Console.ReadLine(), out int userChoice) || (userChoice < 1 || userChoice > 3))
                 {
-                    Console.WriteLine("invalid choice, please try again");
+                    ErrorMessage("\ninvalid choice, please try again");
                     continue;
                 }
 
                 if (userChoice == 1)
                 {
+                    LibraryTag();
+
                     Console.Write("enter your name: ");
                     string userName = Console.ReadLine();
 
@@ -35,7 +39,7 @@ namespace Library
 
                     if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(userEmail))
                     {
-                        Console.WriteLine("invalid name or email, please try again");
+                        ErrorMessage("\ninvalid name or email, please try again");
                         continue;
                     }
 
@@ -50,28 +54,39 @@ namespace Library
                     int customerChoice = 0;
                     while (customerChoice != 6)
                     {
-                        Console.WriteLine("1 - search a book by title");
-                        Console.WriteLine("2 - list available books");
-                        Console.WriteLine("3 - borrow a book");
-                        Console.WriteLine("4 - return a book");
-                        Console.WriteLine("5 - view my borrowed books");
-                        Console.WriteLine("6 - exit");
+                        LibraryTag();
+
+                        Console.Write("> user: ");
+
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.WriteLine("{0}\n", user.name);
+
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                        Console.WriteLine("1. search a book by title");
+                        Console.WriteLine("2. list available books");
+                        Console.WriteLine("3. borrow a book");
+                        Console.WriteLine("4. return a book");
+                        Console.WriteLine("5. view my borrowed books");
+                        Console.WriteLine("6. exit\n");
 
                         if (!int.TryParse(Console.ReadLine(), out customerChoice))
                         {
-                            Console.WriteLine("invalid choice, please try again");
+                            ErrorMessage("\ninvalid choice, please try again");
                             continue;
                         }
 
                         switch (customerChoice)
                         {
                             case 1:
+                                LibraryTag();
+
                                 Console.Write("enter the book title: ");
                                 string bookTitle = Console.ReadLine();
+                                Console.Write("\n");
 
                                 if (string.IsNullOrWhiteSpace(bookTitle))
                                 {
-                                    Console.WriteLine("invalid title, please try again");
+                                    ErrorMessage("\ninvalid title, please try again");
                                     continue;
                                 }
 
@@ -89,37 +104,46 @@ namespace Library
                                 {
                                     foreach (var bookFound in foundBooks)
                                     {
-                                        Console.WriteLine("id: {0}, book found: {1} by {2}", bookFound.id, bookFound.title, bookFound.author);
+                                        Console.WriteLine("id: {0} | book found: {1} by {2}", bookFound.id, bookFound.title, bookFound.author);
+                                        Thread.Sleep(100);
                                     }
+
+                                    Console.ReadLine();
                                 }
 
                                 else
                                 {
-                                    Console.WriteLine("book not found");
+                                    ErrorMessage("no books found with that title");
                                 }
 
                                 break;
 
                             case 2:
+                                LibraryTag();
+
                                 if (books.Count > 0)
                                 {
-                                    Console.WriteLine("available books");
+                                    Console.WriteLine("available books\n");
 
                                     foreach (var book in books.Where(b => b.IsAvailable()))
                                     {
-                                        Console.WriteLine("id: {0}, title: {1}, author: {2}", book.id, book.title, book.author);
+                                        Console.WriteLine("id: {0} | title: {1} | author: {2}", book.id, book.title, book.author);
+                                        Thread.Sleep(100);
                                     }
 
+                                    Console.ReadLine();
                                     break;
                                 }
 
                                 else
                                 {
-                                    Console.WriteLine("no books available");
+                                    ErrorMessage("\nno books in the system");
                                     break;
                                 }
 
                             case 3:
+                                LibraryTag();
+
                                 Console.Write("enter the book id: ");
                                 int borrowBookId = int.Parse(Console.ReadLine());
 
@@ -135,36 +159,42 @@ namespace Library
 
                                             book.available = false;
                                             user.borrowedBooks.Add(new BookLoan(user, book, DateTime.Now));
-                                            Console.WriteLine("loan made successfully");
+                                            SuccessMessage("\nbook borrowed successfully");
 
                                             break;
                                         }
 
                                         else if (book.available == false)
                                         {
-                                            Console.WriteLine("book is not available for borrowing");
+                                            ErrorMessage("\nbook is not available for borrowing");
+
+                                            break;
                                         }
 
                                         else if (!user.CanBorrow())
                                         {
-                                            Console.WriteLine("user cannot borrow more books");
+                                            ErrorMessage("\nyou have already borrowed 3 books, please return one before borrowing another");
+
+                                            break;
                                         }
                                     }
                                 }
 
                                 if (!bookExistsBorrow)
                                 {
-                                    Console.WriteLine("book not found");
+                                    ErrorMessage("\nbook not found");
                                 }
 
                                 break;
 
                             case 4:
+                                LibraryTag();
+
                                 Console.Write("enter the book id: ");
 
                                 if (!int.TryParse(Console.ReadLine(), out int returnBookId))
                                 {
-                                    Console.WriteLine("invalid id, please try again");
+                                    ErrorMessage("\ninvalid id, please try again");
                                     continue;
                                 }
 
@@ -176,7 +206,7 @@ namespace Library
                                     {
                                         loan.RegisterReturn();
                                         loan.book.available = true;
-                                        Console.WriteLine("book returned successfully");
+                                        SuccessMessage("\nbook returned successfully");
 
                                         bookExistsReturn = true;
                                         break;
@@ -184,7 +214,7 @@ namespace Library
 
                                     else if (loan.book.id.Equals(returnBookId) && loan.IsReturned())
                                     {
-                                        Console.WriteLine("book already returned");
+                                        ErrorMessage("\nbook already returned");
                                         bookExistsReturn = true;
                                         break;
                                     }
@@ -192,22 +222,27 @@ namespace Library
 
                                 if (!bookExistsReturn)
                                 {
-                                    Console.WriteLine("book not found");
+                                    ErrorMessage("\nbook not found in your borrowed books");
                                 }
 
                                 break;
 
                             case 5:
+                                LibraryTag();
+
                                 if (user.borrowedBooks.Count > 0)
                                 {
-                                    Console.WriteLine("{0}'s borrowed books", user.name);
+                                    Console.WriteLine("{0}'s borrowed books\n", user.name);
 
                                     foreach (var loan in user.borrowedBooks)
                                     {
                                         if (!loan.book.available)
                                         {
-                                            Console.WriteLine("id: {0}, book: {1}, loan date: {2}", loan.id, loan.book.title, loan.loanDate);
+                                            Console.WriteLine("id: {0} | book: {1} | loan date: {2}", loan.id, loan.book.title, loan.loanDate);
+                                            Thread.Sleep(100);
                                         }
+
+                                        Console.ReadLine();
                                     }
 
                                     break;
@@ -215,7 +250,7 @@ namespace Library
 
                                 else
                                 {
-                                    Console.WriteLine("no borrowed books");
+                                    ErrorMessage("\nno borrowed books");
                                     break;
                                 }
 
@@ -223,7 +258,7 @@ namespace Library
                                 break;
 
                             default:
-                                Console.WriteLine("invalid choice, please try again");
+                                ErrorMessage("\ninvalid choice, please try again");
                                 break;
                         }
                     }
@@ -234,23 +269,28 @@ namespace Library
                     int employeeChoice = 0;
                     while (employeeChoice != 7)
                     {
-                        Console.WriteLine("1 - add new book");
-                        Console.WriteLine("2 - remove book from system");
-                        Console.WriteLine("3 - edit book information");
-                        Console.WriteLine("4 - list all books (including borrowed)");
-                        Console.WriteLine("5 - view all customers and their borrowings");
-                        Console.WriteLine("6 - view borrowing history");
-                        Console.WriteLine("7 - exit");
+                        LibraryTag();
+
+                        Console.WriteLine("> admin dashboard\n");
+                        Console.WriteLine("1. add new book");
+                        Console.WriteLine("2. remove book from system");
+                        Console.WriteLine("3. edit book information");
+                        Console.WriteLine("4. list all books (including borrowed)");
+                        Console.WriteLine("5. view all customers and their borrowings");
+                        Console.WriteLine("6. view borrowing history");
+                        Console.WriteLine("7. exit\n");
 
                         if (!int.TryParse(Console.ReadLine(), out employeeChoice))
                         {
-                            Console.WriteLine("invalid choice, please try again");
+                            ErrorMessage("\ninvalid choice, please try again");
                             continue;
                         }
 
                         switch (employeeChoice)
                         {
                             case 1:
+                                LibraryTag();
+
                                 Console.Write("enter the books title: ");
                                 string bookTitle = Console.ReadLine();
 
@@ -259,7 +299,7 @@ namespace Library
 
                                 if (string.IsNullOrWhiteSpace(bookTitle) || string.IsNullOrWhiteSpace(bookAuthor))
                                 {
-                                    Console.WriteLine("invalid title or author, please try again");
+                                    ErrorMessage("\ninvalid title or author, please try again");
                                     continue;
                                 }
 
@@ -269,7 +309,7 @@ namespace Library
                                 {
                                     if (book.title.Equals(bookTitle) && book.author.Equals(bookAuthor))
                                     {
-                                        Console.WriteLine("book already exists");
+                                        ErrorMessage("\nbook already exists in the system");
                                         bookExistsAdd = true;
                                         break;
                                     }
@@ -280,17 +320,19 @@ namespace Library
                                     Book newBook = new Book(bookTitle, bookAuthor, true);
                                     books.Add(newBook);
 
-                                    Console.WriteLine("book added successfully with id: {0}", newBook.id);
+                                    SuccessMessage($"\nbook added successfully");
                                 }
 
                                 break;
 
                             case 2:
+                                LibraryTag();
+
                                 Console.Write("enter the book id: ");
 
                                 if (!int.TryParse(Console.ReadLine(), out int removeBookId))
                                 {
-                                    Console.WriteLine("invalid id, please try again");
+                                    ErrorMessage("\ninvalid id, please try again");
                                     continue;
                                 }
 
@@ -302,7 +344,7 @@ namespace Library
                                     {
                                         books.Remove(book);
 
-                                        Console.WriteLine("book removed successfully");
+                                        SuccessMessage("\nbook removed successfully");
                                         bookExistsRemove = true;
                                         break;
                                     }
@@ -310,17 +352,19 @@ namespace Library
 
                                 if (!bookExistsRemove)
                                 {
-                                    Console.WriteLine("book not found");
+                                    ErrorMessage("\nbook not found");
                                 }
 
                                 break;
 
                             case 3:
+                                LibraryTag();
+
                                 Console.Write("enter the book id: ");
 
                                 if (!int.TryParse(Console.ReadLine(), out int editBookId))
                                 {
-                                    Console.WriteLine("invalid id, please try again");
+                                    ErrorMessage("\ninvalid id, please try again");
                                     continue;
                                 }
 
@@ -330,122 +374,160 @@ namespace Library
                                 {
                                     if (book.id.Equals(editBookId))
                                     {
+                                        LibraryTag();
+
                                         Console.WriteLine("enter which one you want to update");
-                                        Console.WriteLine("1 - title");
-                                        Console.WriteLine("2 - author");
-                                        int editChoice = Console.Read();
+                                        Console.WriteLine("1. title");
+                                        Console.WriteLine("2. author\n");
+
+                                        if (!int.TryParse(Console.ReadLine(), out int editChoice))
+                                        {
+                                            ErrorMessage("\ninvalid choice, please try again");
+                                            continue;
+                                        }
 
                                         switch (editChoice)
                                         {
                                             case 1:
-                                                Console.Write("enter new title: ");
-                                                book.title = Console.ReadLine();
+                                                LibraryTag();
 
-                                                if (string.IsNullOrWhiteSpace(book.title))
+                                                Console.Write("\nenter new title: ");
+                                                string newTitle = Console.ReadLine();
+
+                                                if (string.IsNullOrWhiteSpace(newTitle))
                                                 {
-                                                    Console.WriteLine("invalid title, please try again");
+                                                    ErrorMessage("\ninvalid title, please try again");
+                                                    continue;
+                                                }
+
+                                                bool duplicateExistsTitle = books.Any(b => b.title == newTitle && b.author == book.author && b.id != book.id);
+
+                                                if (duplicateExistsTitle)
+                                                {
+                                                    ErrorMessage("\nbook with this title and author already exists.");
                                                     continue;
                                                 }
 
                                                 else
                                                 {
-                                                    Console.WriteLine("title updated successfully");
+                                                    book.title = newTitle;
+                                                    SuccessMessage("\ntitle updated successfully");
+                                                    break;
                                                 }
-
-                                                break;
 
                                             case 2:
-                                                Console.Write("enter new author: ");
-                                                book.author = Console.ReadLine();
+                                                LibraryTag();
 
-                                                if (string.IsNullOrWhiteSpace(book.author))
+                                                Console.Write("\nenter new author: ");
+                                                string newAuthor = Console.ReadLine();
+
+                                                if (string.IsNullOrWhiteSpace(newAuthor))
                                                 {
-                                                    Console.WriteLine("invalid author, please try again");
+                                                    ErrorMessage("\ninvalid author, please try again");
+                                                    continue;
+                                                }
+
+                                                bool duplicateExistsAuthor = books.Any(b => b.title == book.title && b.author == newAuthor && b.id != book.id);
+
+                                                if (duplicateExistsAuthor)
+                                                {
+                                                    ErrorMessage("\nbook with this title and author already exists.");
                                                     continue;
                                                 }
 
                                                 else
                                                 {
-                                                    Console.WriteLine("author updated successfully");
+                                                    book.author = newAuthor;
+                                                    SuccessMessage("\nauthor updated successfully");
+                                                    break;
                                                 }
- 
-                                                break;
 
                                             default:
-                                                Console.WriteLine("invalid choice");
+                                                ErrorMessage("\ninvalid choice, please try again");
                                                 break;
                                         }
 
-                                        bookExistsRemove = true;
+                                        bookExistsEdit = true;
                                         break;
                                     }
                                 }
 
                                 if (!bookExistsEdit)
                                 {
-                                    Console.WriteLine("book not found");
+                                    ErrorMessage("\nbook not found");
                                 }
 
                                 break;
 
                             case 4:
+                                LibraryTag();
+
                                 if (books.Count > 0)
                                 {
-                                    Console.WriteLine("all books (including borrowed)");
+                                    Console.WriteLine("all books (including borrowed)\n");
 
                                     foreach (var book in books)
                                     {
-                                        Console.WriteLine("id: {0}, title: {1}, author: {2}, available: {3}", book.id, book.title, book.author, book.IsAvailable() ? "yes" : "no");
+                                        Console.WriteLine("id: {0} | title: {1} | author: {2} | available: {3}", book.id, book.title, book.author, book.IsAvailable() ? "yes" : "no");
+                                        Thread.Sleep(100);
                                     }
+
+                                    Console.ReadLine();
                                 }
 
                                 else
                                 {
-                                    Console.WriteLine("no books in the system");
+                                    ErrorMessage("\nno books in the system");
                                 }
 
                                 break;
 
                             case 5:
+                                LibraryTag();
+
                                 if (users.Count > 0)
                                 {
-                                    Console.WriteLine("all customers and their borrowings");
+                                    Console.WriteLine("all customers and their borrowings\n");
 
                                     foreach (var user in users)
                                     {
-                                        Console.WriteLine("customer: {0}, email: {1}", user.name, user.email);
+                                        Console.WriteLine("\ncustomer: {0}, email: {1}", user.name, user.email);
 
                                         if (user.borrowedBooks.Count > 0)
                                         {
                                             Console.WriteLine("borrowed books:");
                                             foreach (var loan in user.borrowedBooks)
                                             {
-                                                Console.WriteLine("id: {0}, book: {1}, loan date: {2}, returned: {3}", loan.id, loan.book.title, loan.loanDate, loan.IsReturned() ? "yes" : "no");
+                                                Console.WriteLine("id: {0} | book: {1} | loan date: {2} | returned: {3}", loan.id, loan.book.title, loan.loanDate, loan.IsReturned() ? "yes" : "no");
+                                                Thread.Sleep(100);
                                             }
                                         }
 
                                         else
                                         {
-                                            Console.WriteLine("no borrowed books");
+                                            ErrorMessage("\nno borrowed books for this customer");
                                         }
                                     }
 
+                                    Console.ReadLine();
                                     break;
                                 }
 
                                 else
                                 {
-                                    Console.WriteLine("no customers in the system");
+                                    ErrorMessage("\nno customers in the system");
                                     break;
                                 }
 
                             case 6:
-                                Console.WriteLine("enter the costumer name: ");
+                                LibraryTag();
+
+                                Console.Write("enter the costumer name: ");
                                 string customerName = Console.ReadLine();
 
                                 if (string.IsNullOrWhiteSpace(customerName))
                                 {
-                                    Console.WriteLine("invalid name, please try again");
+                                    ErrorMessage("\ninvalid name, please try again");
                                     continue;
                                 }
 
@@ -463,27 +545,30 @@ namespace Library
                                 {
                                     foreach (var customer in customersSameName)
                                     {
-                                        Console.WriteLine("customer: {0}, email: {1}", customer.name, customer.email);
+                                        Console.WriteLine("\ncustomer: {0}, email: {1}", customer.name, customer.email);
 
                                         if (customer.borrowedBooks.Count > 0)
                                         {
                                             Console.WriteLine("borrowing history:");
                                             foreach (var loan in customer.borrowedBooks)
                                             {
-                                                Console.WriteLine("id: {0}, book: {1}, loan date: {2}, returned: {3}", loan.id, loan.book.title, loan.loanDate, loan.IsReturned() ? "yes" : "no");
+                                                Console.WriteLine("id: {0} | book: {1} | loan date: {2} | returned: {3}", loan.id, loan.book.title, loan.loanDate, loan.IsReturned() ? "yes" : "no");
+                                                Thread.Sleep(100);
                                             }
                                         }
 
                                         else
                                         {
-                                            Console.WriteLine("no borrowed books");
+                                            ErrorMessage("\nno borrowing history for this customer");
                                         }
                                     }
+
+                                    Console.ReadLine();
                                 }
 
                                 else
                                 {
-                                    Console.WriteLine("customer not found");
+                                    ErrorMessage("\nno customers found with that name");
                                 }
 
                                 break;
@@ -492,7 +577,7 @@ namespace Library
                                 break;
 
                             default:
-                                Console.WriteLine("invalid choice, please try again");
+                                ErrorMessage("\ninvalid choice, please try again");
                                 break;
                         }
                     }
@@ -500,11 +585,37 @@ namespace Library
 
                 else if (userChoice == 3)
                 {
-                    Console.WriteLine("exiting...");
+                    Console.WriteLine("\nexiting...");
                     Thread.Sleep(1000);
                     return;
                 }
             }
+        }
+
+        static public void LibraryTag()
+        {
+            Console.Clear();
+
+            string asciiArt = " ___       ___  ________  ________  ________  ________      ___    ___ \r\n|\\  \\     |\\  \\|\\   __  \\|\\   __  \\|\\   __  \\|\\   __  \\    |\\  \\  /  /|\r\n\\ \\  \\    \\ \\  \\ \\  \\|\\ /\\ \\  \\|\\  \\ \\  \\|\\  \\ \\  \\|\\  \\   \\ \\  \\/  / /\r\n \\ \\  \\    \\ \\  \\ \\   __  \\ \\   _  _\\ \\   __  \\ \\   _  _\\   \\ \\    / / \r\n  \\ \\  \\____\\ \\  \\ \\  \\|\\  \\ \\  \\\\  \\\\ \\  \\ \\  \\ \\  \\\\  \\|   \\/  /  /  \r\n   \\ \\_______\\ \\__\\ \\_______\\ \\__\\\\ _\\\\ \\__\\ \\__\\ \\__\\\\ _\\ __/  / /    \r\n    \\|_______|\\|__|\\|_______|\\|__|\\|__|\\|__|\\|__|\\|__|\\|__|\\___/ /     \r\n                                                          \\|___|/      ";
+
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.WriteLine(asciiArt);
+
+            Console.ForegroundColor = ConsoleColor.Gray;
+        }
+
+        static public void ErrorMessage(string message)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(message);
+            Console.ReadLine();
+        }
+
+        public static void SuccessMessage(string message)
+        {
+            Console.ForegroundColor = ConsoleColor.Green; 
+            Console.WriteLine(message);
+            Console.ReadLine();
         }
     }
 }
